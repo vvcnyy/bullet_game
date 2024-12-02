@@ -67,7 +67,7 @@ void drawGame(char screen[HEIGHT][WIDTH]) {
     // 활성화된 총알 표시
     for (int i = 0; i < MAX_BULLETS; i++) {
         if (bullets[i].active) {
-            screen[bullets[i].y][bullets[i].x] = '*';
+            screen[bullets[i].y][bullets[i].x] = '-';
         }
     }
 
@@ -194,45 +194,28 @@ void BulletGameOver() {
 void updateBullets() {
     for (int i = 0; i < MAX_BULLETS; i++) {
         if (bullets[i].active) {
-            int prevX = bullets[i].x;
-            int prevY = bullets[i].y;
-
-            // 총알 이동
             switch (bullets[i].direction) {
-            case 0: bullets[i].x -= BULLET_SPEED; break; // 왼쪽
-            case 1: bullets[i].x += BULLET_SPEED; break; // 오른쪽
-            case 2: bullets[i].y += BULLET_SPEED; break; // 아래
-            case 3: bullets[i].y -= BULLET_SPEED; break; // 위
+            case 0: bullets[i].x -= BULLET_SPEED; break;
+            case 1: bullets[i].x += BULLET_SPEED; break;
+            case 2: bullets[i].y += BULLET_SPEED; break;
+            case 3: bullets[i].y -= BULLET_SPEED; break;
             }
 
             // 벽에 닿으면 비활성화
             if (bullets[i].x < 0 || bullets[i].x >= WIDTH || bullets[i].y < 0 || bullets[i].y >= HEIGHT) {
                 bullets[i].active = 0;
-                continue;
             }
 
-            // 이동 경로에서 플레이어와 충돌 체크
-            int dx = (bullets[i].x - prevX);
-            int dy = (bullets[i].y - prevY);
+            // 플레이어와 충돌 체크
+            if (bullets[i].x == playerX && bullets[i].y == playerY) {
+                playerLife--;
 
-            for (int step = 1; step <= BULLET_SPEED; step++) {
-                int checkX = prevX + step * (dx != 0 ? (dx / abs(dx)) : 0);
-                int checkY = prevY + step * (dy != 0 ? (dy / abs(dy)) : 0);
-
-                if (checkX == playerX && checkY == playerY) {
-                    playerLife--;
-
-                    if (playerLife <= 0)
-                        BulletGameOver();
-
-                    bullets[i].active = 0; // 충돌한 총알은 비활성화
-                    break;
-                }
+                if(playerLife <= 0)
+                    BulletGameOver();
             }
         }
     }
 }
-
 
 // 플레이어 업데이트
 void updatePlayer() {
@@ -260,11 +243,7 @@ void updateGame() {
     time_t newTime = time(NULL);
     if (difftime(newTime, currentBulletTime) >= BULLET_DIR_CYCLE){
         currentBulletTime = newTime;
-        //currentDir = rand() % 4;
-
-        int temp = currentDir;
-        while(currentDir == temp)
-			currentDir = rand() % 4;
+        currentDir = rand() % 4;
 	}
 
     if(difftime(newTime, currentScoreTime) >= 1){
